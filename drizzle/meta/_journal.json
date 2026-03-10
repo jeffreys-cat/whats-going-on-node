@@ -8,6 +8,13 @@
       "when": 1773128215555,
       "tag": "0000_youthful_black_bird",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1773139863611,
+      "tag": "0001_happy_tigra",
+      "breakpoints": true
     }
   ]
 }
