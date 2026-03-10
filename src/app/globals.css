@@ -127,6 +127,27 @@ a {
   margin-bottom: 1.5rem;
 }
 
+.section-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.section-nav-link {
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.45);
+  color: var(--muted);
+}
+
+.section-nav-link-active {
+  background: linear-gradient(135deg, rgba(13, 124, 102, 0.16), rgba(5, 74, 61, 0.2));
+  color: var(--accent-strong);
+  border-color: rgba(13, 124, 102, 0.25);
+}
+
 .page-header h2 {
   margin: 0.35rem 0 0;
   font-size: clamp(2.4rem, 5vw, 4.5rem);
@@ -208,6 +229,18 @@ a {
 .list {
   margin: 0;
   padding-left: 1.2rem;
+}
+
+.overview-list {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.overview-list-item {
+  padding: 0.95rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface-strong);
 }
 
 .table-wrap {

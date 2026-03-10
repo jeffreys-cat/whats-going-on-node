@@ -8,6 +8,7 @@ import {
   getDefaultDigestDays,
   getDefaultDigestLang,
 } from "@/lib/sources/github/defaults";
+import { parseGithubRepositoryInput } from "@/lib/sources/github/repository-input";
 
 type SourceOption = {
   id: string;
@@ -18,8 +19,7 @@ type SourceOption = {
 
 export function GithubSourceForm({ sources }: { sources: SourceOption[] }) {
   const router = useRouter();
-  const [owner, setOwner] = useState("");
-  const [repo, setRepo] = useState("");
+  const [repositoryLink, setRepositoryLink] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [selectedSourceId, setSelectedSourceId] = useState(sources[0]?.id ?? "");
   const [defaultDays, setDefaultDays] = useState("3");
@@ -46,7 +46,7 @@ export function GithubSourceForm({ sources }: { sources: SourceOption[] }) {
     setStatus("");
 
     try {
-      const externalId = `${owner}/${repo}`;
+      const { owner, repo, externalId } = parseGithubRepositoryInput(repositoryLink);
       const response = await fetch("/api/sources", {
         method: "POST",
         headers: {
@@ -72,8 +72,7 @@ export function GithubSourceForm({ sources }: { sources: SourceOption[] }) {
       }
 
       setSelectedSourceId(data.id);
-      setOwner("");
-      setRepo("");
+      setRepositoryLink("");
       setDisplayName("");
       setDefaultDays("3");
       setDefaultLang("zh");
@@ -92,28 +91,16 @@ export function GithubSourceForm({ sources }: { sources: SourceOption[] }) {
     <div className="form-cluster">
       <form className="form-stack" onSubmit={createSource}>
         <p className="field-label">Add repository</p>
-        <div className="field-grid">
-          <label className="field">
-            <span className="field-caption">Owner</span>
-            <input
-              className="field-input"
-              value={owner}
-              onChange={(event) => setOwner(event.target.value)}
-              placeholder="vercel"
-              required
-            />
-          </label>
-          <label className="field">
-            <span className="field-caption">Repo</span>
-            <input
-              className="field-input"
-              value={repo}
-              onChange={(event) => setRepo(event.target.value)}
-              placeholder="next.js"
-              required
-            />
-          </label>
-        </div>
+        <label className="field">
+          <span className="field-caption">GitHub link</span>
+          <input
+            className="field-input"
+            value={repositoryLink}
+            onChange={(event) => setRepositoryLink(event.target.value)}
+            placeholder="https://github.com/vercel/next.js"
+            required
+          />
+        </label>
         <label className="field">
           <span className="field-caption">Display name</span>
           <input

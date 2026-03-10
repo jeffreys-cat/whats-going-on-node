@@ -9,6 +9,7 @@ import {
   getDefaultDigestDays,
   getDefaultDigestLang,
 } from "@/lib/sources/github/defaults";
+import { parseGithubRepositoryInput } from "@/lib/sources/github/repository-input";
 import type { SummaryRecord } from "@/types/summary";
 import type { SummaryTaskRecord } from "@/types/task";
 
@@ -36,8 +37,7 @@ export function GithubSourceManager({ source, tasks, summaries }: GithubSourceMa
   const router = useRouter();
   const { owner: initialOwner, repo: initialRepo } = splitExternalId(source.externalId);
   const [isEditing, setIsEditing] = useState(false);
-  const [owner, setOwner] = useState(initialOwner);
-  const [repo, setRepo] = useState(initialRepo);
+  const [repositoryLink, setRepositoryLink] = useState(source.externalId);
   const [name, setName] = useState(source.name);
   const [defaultDays, setDefaultDays] = useState(String(getDefaultDigestDays(source.config)));
   const [defaultLang, setDefaultLang] = useState<"zh" | "en">(getDefaultDigestLang(source.config));
@@ -51,16 +51,11 @@ export function GithubSourceManager({ source, tasks, summaries }: GithubSourceMa
   const latestSummary = summaries[0] ?? null;
 
   async function onSave() {
-    const externalId = `${owner}/${repo}`.trim();
-    if (!owner || !repo) {
-      setStatus("Owner and repo are required.");
-      return;
-    }
-
     setIsPending(true);
     setStatus("");
 
     try {
+      const { owner, repo, externalId } = parseGithubRepositoryInput(repositoryLink);
       const response = await fetch(`/api/sources/${source.id}`, {
         method: "PATCH",
         headers: {
@@ -125,16 +120,14 @@ export function GithubSourceManager({ source, tasks, summaries }: GithubSourceMa
     <div className="api-item">
       {isEditing ? (
         <div className="form-stack">
-          <div className="field-grid">
-            <label className="field">
-              <span className="field-caption">Owner</span>
-              <input className="field-input" value={owner} onChange={(event) => setOwner(event.target.value)} />
-            </label>
-            <label className="field">
-              <span className="field-caption">Repo</span>
-              <input className="field-input" value={repo} onChange={(event) => setRepo(event.target.value)} />
-            </label>
-          </div>
+          <label className="field">
+            <span className="field-caption">GitHub link</span>
+            <input
+              className="field-input"
+              value={repositoryLink}
+              onChange={(event) => setRepositoryLink(event.target.value)}
+            />
+          </label>
           <label className="field">
             <span className="field-caption">Display name</span>
             <input className="field-input" value={name} onChange={(event) => setName(event.target.value)} />
@@ -210,8 +203,7 @@ export function GithubSourceManager({ source, tasks, summaries }: GithubSourceMa
                 disabled={isPending}
                 onClick={() => {
                   setIsEditing(false);
-                  setOwner(initialOwner);
-                  setRepo(initialRepo);
+                  setRepositoryLink(`${initialOwner}/${initialRepo}`);
                   setName(source.name);
                   setDefaultDays(String(getDefaultDigestDays(source.config)));
                   setDefaultLang(getDefaultDigestLang(source.config));
@@ -240,7 +232,7 @@ export function GithubSourceManager({ source, tasks, summaries }: GithubSourceMa
                 {isPending ? "Deleting..." : "Delete"}
               </button>
             </>
-          )}
+      )}
         </div>
       </div>
       {status ? <p className="task-action-status">{status}</p> : null}
