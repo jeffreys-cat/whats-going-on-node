@@ -48,8 +48,6 @@ export default async function GithubPage() {
     <div className="grid">
       <GithubActivityOverview
         activities={activities}
-        summaries={summaries}
-        tasks={tasks}
         currentCycle={currentCycle}
       />
 

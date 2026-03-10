@@ -32,13 +32,9 @@ function getCycleLabel(summary: SummaryRecord | null) {
 
 export function GithubActivityOverview({
   activities,
-  summaries,
-  tasks,
   currentCycle,
 }: {
   activities: SourceActivity[];
-  summaries: SummaryRecord[];
-  tasks: SummaryTaskRecord[];
   currentCycle: { start: string; end: string } | null;
 }) {
   const updatedThisCycle = currentCycle
@@ -151,40 +147,6 @@ export function GithubActivityOverview({
           </div>
         ) : (
           <p className="card-detail">No GitHub repositories registered yet.</p>
-        )}
-      </section>
-
-      <section className="panel span-8">
-        <div className="panel-header-inline">
-          <div>
-            <p className="panel-kicker">Latest changes</p>
-            <h3 className="panel-title">Activity stream</h3>
-          </div>
-          <Link href="/summaries" className="button button-secondary button-link-inline">
-            View all updates
-          </Link>
-        </div>
-        {summaries.length ? (
-          <div className="api-list">
-            {summaries.slice(0, 6).map((summary) => (
-              <Link key={summary.id} href={`/summaries/${summary.id}`} className="api-item card-link">
-                <div className="task-card-head">
-                  <div>
-                    <div className="api-path">
-                      {activities.find((activity) => activity.id === summary.sourceId)?.externalId ?? summary.title}
-                    </div>
-                    <p className="card-detail">
-                      {getCycleLabel(summary)} · {summary.language}
-                    </p>
-                  </div>
-                  <span className="pill">{formatDate(summary.createdAt)}</span>
-                </div>
-                <p className="card-detail">{summary.summaryText?.slice(0, 180) ?? "No summary body."}</p>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <p className="card-detail">No repository updates yet.</p>
         )}
       </section>
     </>
