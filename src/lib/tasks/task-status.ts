@@ -51,3 +51,20 @@ export async function getTask(taskId: string): Promise<SummaryTaskRecord | null>
       }
     : null;
 }
+
+export async function deleteTask(taskId: string): Promise<SummaryTaskRecord | null> {
+  const task = await getTask(taskId);
+
+  if (!task) {
+    return null;
+  }
+
+  if (task.status === "running") {
+    throw new Error("Running tasks cannot be deleted.");
+  }
+
+  const db = await getDb();
+  await db.delete(summaryTasks).where(eq(summaryTasks.id, taskId));
+
+  return task;
+}

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { AppShell } from "@/components/app-shell";
 import { MarkdownContent } from "@/components/summaries/markdown-content";
+import { SummaryDeleteButton } from "@/components/summaries/summary-delete-button";
 import { getSummary } from "@/lib/summaries/repository";
 
 export const dynamic = "force-dynamic";
@@ -99,9 +100,12 @@ export default async function SummaryDetailPage({
               </dl>
             </div>
           ) : null}
-          <Link href="/summaries" className="button button-link">
-            Back to summaries
-          </Link>
+          <div className="detail-action-stack">
+            <SummaryDeleteButton summaryId={summary.id} redirectToSummaries />
+            <Link href="/summaries" className="button button-link">
+              Back to summaries
+            </Link>
+          </div>
         </section>
       </div>
     </AppShell>

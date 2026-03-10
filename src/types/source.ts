@@ -20,3 +20,10 @@ export type CreateSourceInput = {
   enabled?: boolean;
   config?: Record<string, unknown>;
 };
+
+export type UpdateSourceInput = {
+  externalId?: string;
+  name?: string;
+  enabled?: boolean;
+  config?: Record<string, unknown>;
+};

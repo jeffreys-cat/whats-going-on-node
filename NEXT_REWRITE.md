@@ -30,6 +30,7 @@ This repository now contains a parallel Next.js rewrite scaffold alongside the e
    ```bash
    DATABASE_URL=postgresql://postgres:postgres@localhost:5432/whats_going_on
    DB_DRIVER=postgres
+   DAILY_SUMMARY_SECRET=replace-me
    ```
 
    Or embedded PGlite:
@@ -37,6 +38,7 @@ This repository now contains a parallel Next.js rewrite scaffold alongside the e
    ```bash
    DB_DRIVER=pglite
    PGLITE_DATA_DIR=.data/pglite
+   DAILY_SUMMARY_SECRET=replace-me
    ```
 
 4. Generate SQL with Drizzle:
@@ -65,6 +67,7 @@ This repository now contains a parallel Next.js rewrite scaffold alongside the e
   - Drizzle schema for persistent external storage
   - optional PGlite runtime for local development
   - first vertical slice for GitHub source registration and digest generation
+  - protected cron webhook for GitHub daily batch execution
 - Not implemented yet:
   - queue-backed worker execution
   - email and Slack source ingestion
@@ -87,4 +90,7 @@ curl -X POST http://localhost:3000/api/sources \
 curl -X POST http://localhost:3000/api/tasks \
   -H 'content-type: application/json' \
   -d '{"taskType":"github_digest","sourceId":"<source-id>","params":{"days":3,"lang":"zh"},"runImmediately":true}'
+
+curl -X POST http://localhost:3000/api/webhooks/cron/daily-summary \
+  -H 'x-cron-secret: replace-me'
 ```

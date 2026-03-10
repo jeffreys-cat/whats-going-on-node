@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { AppShell } from "@/components/app-shell";
+import { SummaryDeleteButton } from "@/components/summaries/summary-delete-button";
 import { listSummaries } from "@/lib/summaries/repository";
 import { listTasks } from "@/lib/tasks/task-status";
 
@@ -45,13 +46,13 @@ export default async function SummariesPage() {
           <h3 className="panel-title">Execution history</h3>
           <div className="api-list">
             {tasks.length ? (
-              tasks.map((task) => (
-                <div key={task.id} className="api-item">
+              tasks.slice(0, 6).map((task) => (
+                <Link key={task.id} href="/tasks" className="api-item card-link">
                   <div className="api-path">{task.taskType}</div>
                   <p className="card-detail">
                     {task.status} · {task.message ?? "No message"}
                   </p>
-                </div>
+                </Link>
               ))
             ) : (
               <p className="card-detail">No task executions yet.</p>
@@ -65,13 +66,24 @@ export default async function SummariesPage() {
           <div className="api-list">
             {summaries.length ? (
               summaries.map((summary) => (
-                <Link key={summary.id} href={`/summaries/${summary.id}`} className="api-item card-link">
-                  <div className="api-path">{summary.title}</div>
-                  <p className="card-detail">
-                    {summary.sourceType} · {summary.language} · {summary.contentDateStart.slice(0, 10)} to{" "}
-                    {summary.contentDateEnd.slice(0, 10)}
-                  </p>
-                </Link>
+                <div key={summary.id} className="api-item">
+                  <Link href={`/summaries/${summary.id}`} className="card-link summary-card-link">
+                    <div className="api-path">{summary.title}</div>
+                    <p className="card-detail">
+                      {summary.sourceType} · {summary.language} · {summary.contentDateStart.slice(0, 10)} to{" "}
+                      {summary.contentDateEnd.slice(0, 10)}
+                    </p>
+                  </Link>
+                  <div className="task-actions">
+                    <span className="api-path">{summary.id}</span>
+                    <div className="task-action-group">
+                      <Link href={`/summaries/${summary.id}`} className="button button-link-inline">
+                        Open
+                      </Link>
+                      <SummaryDeleteButton summaryId={summary.id} />
+                    </div>
+                  </div>
+                </div>
               ))
             ) : (
               <p className="card-detail">No summaries saved yet.</p>

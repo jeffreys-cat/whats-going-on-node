@@ -1,12 +1,19 @@
 "use client";
 
-import { startTransition, useState } from "react";
+import { startTransition, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+
+import { GithubDigestButton } from "@/components/github/github-digest-button";
+import {
+  getDefaultDigestDays,
+  getDefaultDigestLang,
+} from "@/lib/sources/github/defaults";
 
 type SourceOption = {
   id: string;
   name: string;
   externalId: string;
+  config: Record<string, unknown>;
 };
 
 export function GithubSourceForm({ sources }: { sources: SourceOption[] }) {
@@ -15,11 +22,23 @@ export function GithubSourceForm({ sources }: { sources: SourceOption[] }) {
   const [repo, setRepo] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [selectedSourceId, setSelectedSourceId] = useState(sources[0]?.id ?? "");
-  const [days, setDays] = useState("3");
-  const [lang, setLang] = useState<"zh" | "en">("zh");
+  const [defaultDays, setDefaultDays] = useState("3");
+  const [defaultLang, setDefaultLang] = useState<"zh" | "en">("zh");
+  const [days, setDays] = useState(() => String(getDefaultDigestDays(sources[0]?.config ?? {})));
+  const [lang, setLang] = useState<"zh" | "en">(getDefaultDigestLang(sources[0]?.config ?? {}));
   const [status, setStatus] = useState("");
   const [isSavingSource, setIsSavingSource] = useState(false);
-  const [isRunningTask, setIsRunningTask] = useState(false);
+
+  useEffect(() => {
+    const selectedSource = sources.find((source) => source.id === selectedSourceId);
+
+    if (!selectedSource) {
+      return;
+    }
+
+    setDays(String(getDefaultDigestDays(selectedSource.config)));
+    setLang(getDefaultDigestLang(selectedSource.config));
+  }, [selectedSourceId, sources]);
 
   async function createSource(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -41,6 +60,8 @@ export function GithubSourceForm({ sources }: { sources: SourceOption[] }) {
           config: {
             owner,
             repo,
+            defaultDigestDays: Number(defaultDays),
+            defaultDigestLang: defaultLang,
           },
         }),
       });
@@ -54,6 +75,8 @@ export function GithubSourceForm({ sources }: { sources: SourceOption[] }) {
       setOwner("");
       setRepo("");
       setDisplayName("");
+      setDefaultDays("3");
+      setDefaultLang("zh");
       setStatus(`Source ${externalId} saved.`);
       startTransition(() => {
         router.refresh();
@@ -62,49 +85,6 @@ export function GithubSourceForm({ sources }: { sources: SourceOption[] }) {
       setStatus(error instanceof Error ? error.message : "Failed to create source.");
     } finally {
       setIsSavingSource(false);
-    }
-  }
-
-  async function runDigest(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!selectedSourceId) {
-      setStatus("Select or create a GitHub source first.");
-      return;
-    }
-
-    setIsRunningTask(true);
-    setStatus("");
-
-    try {
-      const response = await fetch("/api/tasks", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          taskType: "github_digest",
-          sourceId: selectedSourceId,
-          params: {
-            days: Number(days),
-            lang,
-          },
-          runImmediately: true,
-        }),
-      });
-
-      const data = (await response.json()) as { error?: string; status?: string };
-      if (!response.ok) {
-        throw new Error(data.error ?? "Failed to run digest.");
-      }
-
-      setStatus(`Digest finished with status: ${data.status ?? "unknown"}.`);
-      startTransition(() => {
-        router.refresh();
-      });
-    } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Failed to run digest.");
-    } finally {
-      setIsRunningTask(false);
     }
   }
 
@@ -143,12 +123,36 @@ export function GithubSourceForm({ sources }: { sources: SourceOption[] }) {
             placeholder="Next.js"
           />
         </label>
+        <div className="field-grid">
+          <label className="field">
+            <span className="field-caption">Default days</span>
+            <input
+              className="field-input"
+              type="number"
+              min="1"
+              max="30"
+              value={defaultDays}
+              onChange={(event) => setDefaultDays(event.target.value)}
+            />
+          </label>
+          <label className="field">
+            <span className="field-caption">Default language</span>
+            <select
+              className="field-input"
+              value={defaultLang}
+              onChange={(event) => setDefaultLang(event.target.value as "zh" | "en")}
+            >
+              <option value="zh">Chinese</option>
+              <option value="en">English</option>
+            </select>
+          </label>
+        </div>
         <button className="button" type="submit" disabled={isSavingSource}>
           {isSavingSource ? "Saving..." : "Add source"}
         </button>
       </form>
 
-      <form className="form-stack" onSubmit={runDigest}>
+      <div className="form-stack">
         <p className="field-label">Run digest</p>
         <label className="field">
           <span className="field-caption">Repository</span>
@@ -189,11 +193,18 @@ export function GithubSourceForm({ sources }: { sources: SourceOption[] }) {
             </select>
           </label>
         </div>
-        <button className="button" type="submit" disabled={isRunningTask}>
-          {isRunningTask ? "Running..." : "Generate digest"}
-        </button>
+        {selectedSourceId ? (
+          <GithubDigestButton
+            sourceId={selectedSourceId}
+            days={Number(days)}
+            lang={lang}
+            buttonLabel="Generate digest"
+            buttonClassName="button"
+          />
+        ) : null}
         {status ? <p className="form-status">{status}</p> : null}
-      </form>
+        {!selectedSourceId ? <p className="form-status">Select or create a GitHub source first.</p> : null}
+      </div>
     </div>
   );
 }

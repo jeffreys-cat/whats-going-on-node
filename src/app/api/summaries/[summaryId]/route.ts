@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getSummary } from "@/lib/summaries/repository";
+import { deleteSummary, getSummary } from "@/lib/summaries/repository";
 
 export const runtime = "nodejs";
 
@@ -21,6 +21,27 @@ export async function GET(
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to load summary." },
       { status: 503 },
+    );
+  }
+}
+
+export async function DELETE(
+  _request: Request,
+  context: { params: Promise<{ summaryId: string }> },
+) {
+  try {
+    const { summaryId } = await context.params;
+    const summary = await deleteSummary(summaryId);
+
+    if (!summary) {
+      return NextResponse.json({ error: "Summary not found." }, { status: 404 });
+    }
+
+    return NextResponse.json({ ok: true, item: summary });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to delete summary." },
+      { status: 400 },
     );
   }
 }

@@ -8,6 +8,7 @@ const navItems = [
   { href: "/github", label: "GitHub" },
   { href: "/slack", label: "Slack" },
   { href: "/settings", label: "Settings" },
+  { href: "/tasks", label: "Tasks" },
   { href: "/summaries", label: "Summaries" },
 ] satisfies Array<{ href: Route; label: string }>;
 

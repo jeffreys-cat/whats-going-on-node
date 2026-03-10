@@ -61,6 +61,19 @@ export async function getSummary(summaryId: string): Promise<SummaryRecord | nul
     : null;
 }
 
+export async function deleteSummary(summaryId: string): Promise<SummaryRecord | null> {
+  const summary = await getSummary(summaryId);
+
+  if (!summary) {
+    return null;
+  }
+
+  const db = await getDb();
+  await db.delete(summaries).where(eq(summaries.id, summaryId));
+
+  return summary;
+}
+
 export async function createSummary(input: {
   sourceType: "email" | "github" | "slack";
   sourceId?: string | null;

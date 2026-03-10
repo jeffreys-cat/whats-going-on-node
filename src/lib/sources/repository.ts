@@ -3,13 +3,20 @@ import { z } from "zod";
 
 import { getDb } from "@/lib/db/client";
 import { sources } from "@/lib/db/schema";
-import type { CreateSourceInput, SourceRecord, SourceType } from "@/types/source";
+import type { CreateSourceInput, SourceRecord, SourceType, UpdateSourceInput } from "@/types/source";
 
 const createSourceSchema = z.object({
   sourceType: z.enum(["email", "github", "slack"]),
   provider: z.string().min(1),
   externalId: z.string().min(1),
   name: z.string().min(1),
+  enabled: z.boolean().optional(),
+  config: z.record(z.string(), z.unknown()).optional(),
+});
+
+const updateSourceSchema = z.object({
+  externalId: z.string().min(1).optional(),
+  name: z.string().min(1).optional(),
   enabled: z.boolean().optional(),
   config: z.record(z.string(), z.unknown()).optional(),
 });
@@ -118,4 +125,54 @@ export async function getGithubSourceByRepo(fullName: string) {
         updatedAt: source.updatedAt.toISOString(),
       }
     : null;
+}
+
+export async function updateSource(
+  sourceId: string,
+  input: UpdateSourceInput,
+): Promise<SourceRecord | null> {
+  const parsed = updateSourceSchema.parse(input);
+  const db = await getDb();
+  const existing = await getSource(sourceId);
+
+  if (!existing) {
+    return null;
+  }
+
+  const [source] = await db
+    .update(sources)
+    .set({
+      externalId: parsed.externalId ?? existing.externalId,
+      name: parsed.name ?? existing.name,
+      enabled: parsed.enabled ?? existing.enabled,
+      config: parsed.config ?? existing.config,
+      updatedAt: new Date(),
+    })
+    .where(eq(sources.id, sourceId))
+    .returning();
+
+  return {
+    id: source.id,
+    sourceType: source.sourceType,
+    provider: source.provider,
+    externalId: source.externalId,
+    name: source.name,
+    enabled: source.enabled,
+    config: source.config,
+    createdAt: source.createdAt.toISOString(),
+    updatedAt: source.updatedAt.toISOString(),
+  };
+}
+
+export async function deleteSource(sourceId: string): Promise<SourceRecord | null> {
+  const existing = await getSource(sourceId);
+
+  if (!existing) {
+    return null;
+  }
+
+  const db = await getDb();
+  await db.delete(sources).where(eq(sources.id, sourceId));
+
+  return existing;
 }
