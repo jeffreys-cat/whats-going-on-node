@@ -4,14 +4,6 @@ import { LlmConfigForm } from "@/components/settings/llm-config-form";
 import { getConfig } from "@/lib/config/repository";
 import { maskSecret } from "@/lib/config/mask-secrets";
 
-const configKeys = [
-  "llm_config",
-  "github_config",
-  "slack_config",
-  "feishu_config",
-  "asf_auth",
-];
-
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
@@ -39,18 +31,6 @@ export default async function SettingsPage() {
   return (
     <AppShell eyebrow="Configuration" title="Settings">
       <div className="grid">
-        <section className="panel span-6">
-          <p className="panel-kicker">Database-backed config</p>
-          <h3 className="panel-title">Available config keys</h3>
-          <div className="api-list">
-            {configKeys.map((key) => (
-              <div key={key} className="api-item">
-                <div className="api-path">{key}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-
         <section className="panel span-6">
           <p className="panel-kicker">LLM</p>
           <h3 className="panel-title">Summary generation provider</h3>

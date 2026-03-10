@@ -16,7 +16,7 @@ export function GithubBatchRunList({
   return (
     <div className="api-list">
       {batchRuns.map((run) => (
-        <Link key={run.id} href={`/github/batch-runs/${run.id}`} className="api-item card-link">
+        <Link key={run.id} href={`/batch-runs/${run.id}`} className="api-item card-link">
           <div className="task-card-head">
             <div>
               <div className="api-path">

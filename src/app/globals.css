@@ -611,6 +611,46 @@ a {
   line-height: 1.6;
 }
 
+.repo-activity-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.repo-activity-card {
+  padding: 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 250, 240, 0.92)),
+    var(--surface-strong);
+}
+
+.repo-activity-title {
+  margin: 0.25rem 0 0;
+  font-size: 1.2rem;
+}
+
+.repo-activity-cycle {
+  margin: 0.85rem 0 0;
+  font-family: "Avenir Next Condensed", "Arial Narrow", sans-serif;
+  font-size: 1.35rem;
+}
+
+.repo-activity-meta {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 0.9rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.repo-activity-copy {
+  margin: 0.9rem 0 0;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
 .task-title-link:hover {
   text-decoration: underline;
 }
@@ -694,5 +734,9 @@ a {
 
   .batch-stat-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .repo-activity-grid {
+    grid-template-columns: 1fr;
   }
 }

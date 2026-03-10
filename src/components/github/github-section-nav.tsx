@@ -4,11 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const items = [
-  { href: "/github", label: "Overview" },
+  { href: "/github", label: "Activity" },
   { href: "/github/repositories", label: "Repositories" },
-  { href: "/github/tasks", label: "Tasks" },
-  { href: "/github/summaries", label: "Summaries" },
-  { href: "/github/batch-runs", label: "Batch runs" },
 ] as const;
 
 export function GithubSectionNav() {

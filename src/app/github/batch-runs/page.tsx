@@ -1,29 +1,7 @@
-import { GithubBatchDigestButton } from "@/components/github/github-batch-digest-button";
-import { GithubBatchRunList } from "@/components/github/github-batch-run-list";
-import { getGithubPageData } from "@/lib/github/page-data";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-export default async function GithubBatchRunsPage() {
-  const { batchRuns } = await getGithubPageData({
-    taskLimit: 1,
-    summaryLimit: 1,
-    batchRunLimit: 30,
-  });
-
-  return (
-    <div className="grid">
-      <section className="panel span-12">
-        <p className="panel-kicker">Batch runs</p>
-        <div className="panel-header-inline">
-          <div>
-            <h3 className="panel-title">Daily batch executions</h3>
-            <p className="panel-copy">Batch scheduling and execution history is isolated here.</p>
-          </div>
-          <GithubBatchDigestButton />
-        </div>
-        <GithubBatchRunList batchRuns={batchRuns} emptyMessage="No daily batch executions yet." />
-      </section>
-    </div>
-  );
+export default function GithubBatchRunsRedirectPage() {
+  redirect("/batch-runs");
 }

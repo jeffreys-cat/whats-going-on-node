@@ -20,6 +20,7 @@ const navGroups = [
     items: [
       { href: "/tasks", label: "Tasks" },
       { href: "/summaries", label: "Summaries" },
+      { href: "/batch-runs", label: "Batch runs" },
     ],
   },
   {
