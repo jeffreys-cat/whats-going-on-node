@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { AppShell } from "@/components/app-shell";
 import { GithubTokenForm } from "@/components/settings/github-token-form";
 import { LlmConfigForm } from "@/components/settings/llm-config-form";
@@ -73,6 +75,15 @@ export default async function SettingsPage() {
               <GithubTokenForm initialToken={githubToken} />
             </div>
           </div>
+        </section>
+
+        <section className="panel span-12">
+          <p className="panel-kicker">Operations</p>
+          <h3 className="panel-title">Health snapshot</h3>
+          <p className="panel-copy">Open the dedicated page for cycle coverage, recent failures, and batch-run status.</p>
+          <Link href="/settings/health" className="button button-link">
+            Open health snapshot
+          </Link>
         </section>
       </div>
     </AppShell>
