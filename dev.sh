@@ -22,7 +22,7 @@ REQ_HASH_FILE="${VENV_DIR}/.requirements.hash"
 
 # 默认参数
 HOST="0.0.0.0"
-PORT="5000"
+PORT="5001"
 FOLLOW_LOGS="false"
 
 # ─── 工具函数 ───

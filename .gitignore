@@ -9,7 +9,12 @@ config.json
 data/
 log/
 .env
-
+.env.local
+.next/
+node_modules/
+coverage/
+*.tsbuildinfo
+.data
 # Process files
 *.pid
 *.log
