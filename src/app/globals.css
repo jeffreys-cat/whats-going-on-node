@@ -568,6 +568,25 @@ a {
   background: rgba(29, 38, 29, 0.05);
 }
 
+.batch-stat-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 1rem;
+}
+
+.batch-stat-value {
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+}
+
+.batch-toolbar {
+  margin-bottom: 1rem;
+}
+
+.batch-toolbar-copy {
+  margin: 0;
+}
+
 .pill-pending {
   background: rgba(157, 75, 34, 0.12);
   color: #8b4d2f;
@@ -615,5 +634,9 @@ a {
 
   .field-grid {
     grid-template-columns: 1fr;
+  }
+
+  .batch-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 
 import { GithubBatchDigestButton } from "@/components/github/github-batch-digest-button";
 import { GithubSourceManager } from "@/components/github/github-source-manager";
+import type { BatchRunRecord } from "@/types/batch-run";
 import type { SourceRecord } from "@/types/source";
 import type { SummaryRecord } from "@/types/summary";
 import type { SummaryTaskRecord } from "@/types/task";
@@ -13,10 +14,12 @@ export function GithubHistoryPanel({
   sources,
   tasks,
   summaries,
+  batchRuns,
 }: {
   sources: Array<Pick<SourceRecord, "id" | "name" | "externalId" | "config">>;
   tasks: SummaryTaskRecord[];
   summaries: SummaryRecord[];
+  batchRuns: BatchRunRecord[];
 }) {
   const [selectedSourceId, setSelectedSourceId] = useState("all");
 
@@ -117,6 +120,44 @@ export function GithubHistoryPanel({
             ))
           ) : (
             <p className="card-detail">No GitHub summaries match this filter.</p>
+          )}
+        </div>
+      </section>
+
+      <section className="panel span-12">
+        <p className="panel-kicker">Batch runs</p>
+        <h3 className="panel-title">Recent daily batch executions</h3>
+        <div className="api-list">
+          {batchRuns.length ? (
+            batchRuns.map((run) => (
+              <Link
+                key={run.id}
+                href={`/github/batch-runs/${run.id}`}
+                className="api-item card-link"
+              >
+                <div className="task-card-head">
+                  <div>
+                    <div className="api-path">
+                      {run.triggerSource} · {run.createdAt.slice(0, 19).replace("T", " ")}
+                    </div>
+                    <p className="card-detail">{run.message ?? "No batch message."}</p>
+                  </div>
+                  <span className={`pill pill-${run.status}`}>{run.status}</span>
+                </div>
+                <div className="task-meta">
+                  <span>Queued: {run.queuedCount}</span>
+                  <span>Started: {run.startedCount}</span>
+                  <span>Failed: {run.failedCount}</span>
+                </div>
+                {run.errorMessage ? <p className="task-error">{run.errorMessage}</p> : null}
+                <div className="task-actions">
+                  <span className="api-path">{run.id}</span>
+                  <span className="card-detail">View batch detail</span>
+                </div>
+              </Link>
+            ))
+          ) : (
+            <p className="card-detail">No daily batch executions yet.</p>
           )}
         </div>
       </section>

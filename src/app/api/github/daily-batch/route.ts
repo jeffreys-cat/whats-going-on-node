@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 
 export async function POST() {
   try {
-    const result = await runGithubDailyBatch();
+    const result = await runGithubDailyBatch("dashboard");
 
     return NextResponse.json({
       ok: true,

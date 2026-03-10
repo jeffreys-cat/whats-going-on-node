@@ -20,7 +20,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized cron request." }, { status: 401 });
     }
 
-    const result = await runGithubDailyBatch();
+    const result = await runGithubDailyBatch("cron");
 
     return NextResponse.json({
       ok: true,

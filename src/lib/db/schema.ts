@@ -15,6 +15,7 @@ import {
 export const sourceTypeEnum = pgEnum("source_type", ["email", "github", "slack"]);
 export const taskStatusEnum = pgEnum("task_status", ["pending", "running", "succeeded", "failed"]);
 export const deliveryStatusEnum = pgEnum("delivery_status", ["pending", "succeeded", "failed"]);
+export const batchRunStatusEnum = pgEnum("batch_run_status", ["succeeded", "failed"]);
 
 export const appConfig = pgTable("app_config", {
   id: text("id").primaryKey(),
@@ -124,6 +125,20 @@ export const sourceCache = pgTable(
   }),
 );
 
+export const batchRuns = pgTable("batch_runs", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  batchType: text("batch_type").notNull(),
+  triggerSource: text("trigger_source").notNull(),
+  status: batchRunStatusEnum("status").notNull(),
+  queuedCount: integer("queued_count").default(0).notNull(),
+  startedCount: integer("started_count").default(0).notNull(),
+  failedCount: integer("failed_count").default(0).notNull(),
+  message: text("message"),
+  errorMessage: text("error_message"),
+  metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).defaultNow().notNull(),
+});
+
 export const sourcesRelations = relations(sources, ({ many }) => ({
   fetchRuns: many(fetchRuns),
   summaries: many(summaries),
@@ -135,3 +150,4 @@ export type AppConfigRow = typeof appConfig.$inferSelect;
 export type SourceRow = typeof sources.$inferSelect;
 export type SummaryRow = typeof summaries.$inferSelect;
 export type SummaryTaskRow = typeof summaryTasks.$inferSelect;
+export type BatchRunRow = typeof batchRuns.$inferSelect;

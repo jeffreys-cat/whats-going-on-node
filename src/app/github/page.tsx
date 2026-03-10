@@ -3,15 +3,17 @@ import { GithubHistoryPanel } from "@/components/github/github-history-panel";
 import { GithubSourceForm } from "@/components/github/github-source-form";
 import { listSources } from "@/lib/sources/repository";
 import { listSummaries } from "@/lib/summaries/repository";
+import { listBatchRuns } from "@/lib/tasks/batch-runs";
 import { listTasks } from "@/lib/tasks/task-status";
 
 export const dynamic = "force-dynamic";
 
 export default async function GithubPage() {
-  const [sources, tasks, summaries] = await Promise.all([
+  const [sources, tasks, summaries, batchRuns] = await Promise.all([
     listSources("github"),
     listTasks(10),
     listSummaries(10),
+    listBatchRuns("github_daily_summary", 6),
   ]);
   const githubTasks = tasks.filter((task) => task.taskType === "github_digest");
   const githubSummaries = summaries.filter((summary) => summary.sourceType === "github");
@@ -31,7 +33,12 @@ export default async function GithubPage() {
             }))}
           />
         </section>
-        <GithubHistoryPanel sources={sources} tasks={githubTasks} summaries={githubSummaries} />
+        <GithubHistoryPanel
+          sources={sources}
+          tasks={githubTasks}
+          summaries={githubSummaries}
+          batchRuns={batchRuns}
+        />
       </div>
     </AppShell>
   );
