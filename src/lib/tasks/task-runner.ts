@@ -4,7 +4,7 @@ import { getConfig } from "@/lib/config/repository";
 import { getDb } from "@/lib/db/client";
 import { summaryTasks } from "@/lib/db/schema";
 import { generateSummary } from "@/lib/llm";
-import { fetchGithubActivity, buildGithubDigest } from "@/lib/sources/github/github";
+import { analyzeBranchActivity, fetchGithubActivity, buildGithubDigest } from "@/lib/sources/github/github";
 import { getSource } from "@/lib/sources/repository";
 import { createSummary } from "@/lib/summaries/repository";
 import { getTask } from "@/lib/tasks/task-status";
@@ -37,13 +37,24 @@ function buildGithubDigestPrompt(params: {
     total_issues: number;
     open_issues: number;
     closed_issues: number;
+    active_branches: number;
+    total_branch_commits: number;
   };
   pulls: Array<{ number: number; title: string; state: string }>;
   issues: Array<{ number: number; title: string; state: string }>;
+  branchActivity: Array<{ name: string; commits: Array<{ sha: string; message: string }> }>;
 }) {
   const pullLines = params.pulls.map((pull) => `#${pull.number} ${pull.title} (${pull.state})`).join("\n");
   const issueLines = params.issues
     .map((issue) => `#${issue.number} ${issue.title} (${issue.state})`)
+    .join("\n");
+  const branchLines = params.branchActivity
+    .map(
+      (branch) =>
+        `${branch.name}: ${branch.commits
+          .map((commit) => `${commit.sha.slice(0, 7)} ${commit.message}`)
+          .join(" | ")}`,
+    )
     .join("\n");
 
   if (params.lang === "en") {
@@ -55,12 +66,18 @@ Output Markdown using exactly these sections:
 3. ## Overview
 4. ## Important PRs
 5. ## Active Issues
+6. ## Branch Commit Signals
+7. ## Credible Conclusion
 
 Requirements:
 - Write concise but informative English.
-- The Trend Observation should describe what themes are emerging.
+- The Trend Observation should describe what themes are emerging from PRs, issues, and branch commits together.
 - The Overview should summarize counts and overall direction.
-- Important PRs and Active Issues should be bullet lists.
+- Important PRs, Active Issues, and Branch Commit Signals should be bullet lists.
+- In Branch Commit Signals, analyze what each active branch was doing during the selected period instead of only listing commit messages.
+- For each branch, prefer describing: purpose, main changes, and current status.
+- The Credible Conclusion must explicitly state what can be concluded with confidence, and should distinguish landed work, in-progress branch work, and uncertainty.
+- Do not infer that the repository is inactive just because PRs or issues are quiet if branch commits show ongoing work.
 
 Stats:
 - PRs: ${params.stats.total_prs}
@@ -70,12 +87,17 @@ Stats:
 - Issues updated: ${params.stats.total_issues}
 - Open Issues: ${params.stats.open_issues}
 - Closed Issues: ${params.stats.closed_issues}
+- Active branches with commits: ${params.stats.active_branches}
+- Recent branch commits: ${params.stats.total_branch_commits}
 
 Pull Requests:
 ${pullLines || "None"}
 
 Issues:
 ${issueLines || "None"}
+
+Branch commits:
+${branchLines || "None"}
 `;
   }
 
@@ -87,12 +109,18 @@ ${issueLines || "None"}
 3. ## 总览
 4. ## 重要 PR
 5. ## 活跃 Issue
+6. ## Branch Commit 动向
+7. ## 可信结论
 
 要求：
 - 使用自然、简洁、像周报一样的中文。
-- “趋势观察”要总结最近的主要技术方向和变化趋势。
+- “趋势观察”要综合 PR、Issue 和不同 branch 的 commit，一起总结最近的主要技术方向和变化趋势。
 - “总览”要概括数量和整体状态。
-- “重要 PR”和“活跃 Issue”使用项目符号列表。
+- “重要 PR”、“活跃 Issue”和“Branch Commit 动向”使用项目符号列表。
+- “Branch Commit 动向”不能只罗列 commit message，要按 branch 分析该分支在本周期内主要做了什么。
+- 每个 branch 尽量写出：分支目的、主要改动、当前状态。
+- “可信结论”必须明确说明哪些判断是有证据支撑的，并区分已经落地的主线变更、仍在 branch 中推进的工作、以及暂时不能下强结论的部分。
+- 如果 PR 或 Issue 较少，但 branch commit 明显活跃，不能直接判断项目停滞。
 - 不要输出多余章节。
 
 统计信息：
@@ -103,12 +131,17 @@ ${issueLines || "None"}
 - Issue 更新数：${params.stats.total_issues}
 - Open Issue：${params.stats.open_issues}
 - Closed Issue：${params.stats.closed_issues}
+- 活跃 branch 数：${params.stats.active_branches}
+- branch commit 数：${params.stats.total_branch_commits}
 
 PR 列表：
 ${pullLines || "无"}
 
 Issue 列表：
 ${issueLines || "无"}
+
+Branch commit 列表：
+${branchLines || "无"}
 `;
 }
 
@@ -175,6 +208,7 @@ export async function runPendingTask(taskId: string) {
       .where(eq(summaryTasks.id, taskId));
 
     const activity = await fetchGithubActivity(owner, repo, days, token);
+    const branchAnalysis = analyzeBranchActivity(activity, lang);
     const llmSummary = await generateSummary({
       title: `${owner}/${repo} ${lang === "zh" ? "活动摘要" : "activity digest"}`,
       language: lang,
@@ -192,6 +226,13 @@ export async function runPendingTask(taskId: string) {
           number: issue.number,
           title: issue.title,
           state: issue.state,
+        })),
+        branchActivity: activity.branchActivity.slice(0, 6).map((branch) => ({
+          name: branch.name,
+          commits: branch.commits.slice(0, 4).map((commit) => ({
+            sha: commit.sha,
+            message: commit.message,
+          })),
         })),
       }),
       config: llmConfig?.value as {
@@ -254,6 +295,7 @@ export async function runPendingTask(taskId: string) {
         repo: activity.repo,
         days: activity.days,
         stats: activity.stats,
+        branchAnalysis,
         llm: llmDebug,
       },
     });
